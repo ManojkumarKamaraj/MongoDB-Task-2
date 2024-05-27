@@ -1,0 +1,100 @@
+// Database Created and Inserted
+ use CLASSPROGRAMME;
+
+// Tasks queries followed after Insertion:
+// of table topic and tasks
+Query 1:
+Find all the topics and tasks which are thought in the month of October?
+
+db.tasks.aggregate([
+  {
+$lookup:{
+from:`topics`,
+localField:`task_topic_id`,
+foreignField:`_id`,
+as:`TopicAndTasks`
+}
+},
+  {
+$unwind:`$TopicAndTasks`
+},
+{
+$project:{
+_id:0,
+Topic: `$TopicAndTasks.topic_name`,
+DEFINEDDATE:`$TopicAndTasks.date`,
+task_description:1,
+status:1
+}
+},
+  {
+$match:{DEFINEDDATE:{$gte:ISODate('2020-10-01T00:00:00.000+00:00'),$lte:ISODate('2020-10-31T00:00:00.000+00:00')}}
+}
+]);
+// Please Verify Output on Query1 Scrrenshot 
+
+2. Find all the company drives which appeared between 15 oct-2020 and 31-oct-2020?
+
+db.company_drives.aggregate([{
+$match:{date:{$gte:ISODate('2020-10-15T00:00:00.000+00:00'),$lte:ISODate('2020-10-31T00:00:00.000+00:00')}}
+}]);
+
+// Please Verify Output on Query2 Scrrenshot
+
+3.Find all the company drives and students who are appeared for the placement?
+
+db.users.aggregate([
+{
+$lookup:{
+from:`company_drives`,
+localField:`campusdrive_id`,
+foreignField:`_id`,
+as:`Eligible`
+}
+},
+{
+$unwind:`$Eligible`
+},
+{
+$project:{
+first_name:1,
+last_name:1,
+_id:0,
+email:1,
+placement_eligiblity:1,
+company:`$Eligible.company_name`
+}
+},
+  {
+$match:{placement_eligiblity:{$eq:'yes'}}
+}
+]);
+
+// Please Verify Output on Query3 Scrrenshot
+
+
+4.Find the number of problems solved by the user in codekata?
+db.codekata.aggregate([
+{
+$group:{_id:'$codekata_user_id',problems_solved:{$sum:1}}
+}
+]);
+// please Verify Output on Query4 Scrrenshot
+
+5. Find all the mentors with who has the mentee's count more than 15?
+db.mentors.aggregate([
+{
+$match:{batches_teaching:{$gt:15}}
+},
+{
+$project:{
+_id:0
+}
+}
+]);
+// please Verify Output on Query5 Scrrenshot;
+// i took mentee count as batches_teaching
+
+6. Find the number of users who are absent and task is not submitted  between 15 oct-2020 and 31-oct-2020?
+
+
